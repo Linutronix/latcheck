@@ -1,0 +1,43 @@
+name: sched_out_runnable
+in:   sched_switch:prev_state==R, SAVE=prev_pid
+out:  sched_wakeup:pid==SAVE || sched_switch:next_pid==SAVE
+
+name: sched_out_sleeping
+in:   sched_switch:prev_state==S, SAVE=prev_pid
+out:  sched_wakeup:pid==SAVE || sched_switch:next_pid==SAVE
+
+name: sched_out_nonint_sleeping
+in:   sched_switch:prev_state==D, SAVE=prev_pid
+out:  sched_wakeup:pid==SAVE || sched_switch:next_pid==SAVE
+
+name: sched_latency
+in:   sched_wakeup:*, SAVE=pid
+out:  sched_switch:next_pid==SAVE
+
+name: workqueue_latency
+in:   workqueue_activate_work:*, SAVE=workstruct
+out:  workqueue_execute_start:workstruct==SAVE
+
+name: workqueue_run
+in:   workqueue_execute_start:*, SAVE=workstruct
+out:  workqueue_execute_end:workstruct==SAVE
+
+name: syscall
+in:   sys_enter:*, SAVE=common_pid
+out:  sys_exit:common_pid==SAVE
+
+name: irq
+in:   irq_handler_entry:*, SAVE=irq
+out:  irq_handler_exit:irq==SAVE
+
+name: softirq_latency
+in:   softirq_raise:*, SAVE=vec
+out:  softirq_entry:vec==SAVE
+
+name: softirq_run
+in:   softirq_entry:*, SAVE=vec
+out:  softirq_exit:vec==SAVE
+
+name: prio_boost
+in:   sched_pi_setprio:oldprio>newprio, SAVE=pid
+out:  sched_pi_setprio:oldprio<newprio && pid==SAVE
